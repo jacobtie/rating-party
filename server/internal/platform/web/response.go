@@ -24,6 +24,10 @@ func HandleError(ctx context.Context, w http.ResponseWriter, err error) {
 		respondError(ctx, w, err, http.StatusBadRequest)
 		return
 	}
+	if errors.Is(err, werrors.ErrUnauthorized) {
+		respondError(ctx, w, err, http.StatusUnauthorized)
+		return
+	}
 	respondError(ctx, w, err, http.StatusInternalServerError)
 }
 

@@ -10,7 +10,6 @@ type Values struct {
 	RequestID    string
 	RequestStart time.Time
 	StatusCode   int
-	RequestBody  string
 	Method       string
 	Path         string
 	IP           string

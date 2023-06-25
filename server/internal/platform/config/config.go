@@ -24,6 +24,8 @@ type Config struct {
 		DBURI      string `default:"localhost:3306" envconfig:"DB_URI"`
 		DBName     string `default:"ratingparty" envconfig:"DB_NAME"`
 	}
+	AdminPasscode  string `default:"ivory" envconfig:"ADMIN_PASSCODE"`
+	AdminJWTSecret string `default:"ebony" envconfig:"ADMIN_JWT_SECRET"`
 }
 
 type ENV string

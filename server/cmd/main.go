@@ -38,7 +38,7 @@ func run() error {
 	}
 	server := &http.Server{
 		Addr:         cfg.Web.APIHost,
-		Handler:      handlers.NewAPI(db),
+		Handler:      handlers.NewAPI(cfg, db),
 		ReadTimeout:  cfg.Web.ReadTimeout,
 		WriteTimeout: cfg.Web.WriteTimeout,
 	}
