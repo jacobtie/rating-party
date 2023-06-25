@@ -14,9 +14,9 @@ func (s *SessionController) SignIn(passcode string) (string, error) {
 		return "", fmt.Errorf("[session.SignIn] invalid passcode: %w", werrors.ErrUnauthorized)
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
-		Audience:  "ranking-party",
+		Audience:  "rating-party",
 		ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
-		Issuer:    "ranking-party",
+		Issuer:    "rating-party",
 		IssuedAt:  time.Now().Unix(),
 		Subject:   "admin",
 	})
