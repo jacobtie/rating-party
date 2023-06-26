@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/jacobtie/rating-party/server/internal/platform/contextvalue"
-	"github.com/jacobtie/rating-party/server/internal/platform/werrors.go"
+	"github.com/jacobtie/rating-party/server/internal/platform/werrors"
 )
 
 type errResponse struct {
@@ -26,6 +26,10 @@ func HandleError(ctx context.Context, w http.ResponseWriter, err error) {
 	}
 	if errors.Is(err, werrors.ErrUnauthorized) {
 		respondError(ctx, w, err, http.StatusUnauthorized)
+		return
+	}
+	if errors.Is(err, werrors.ErrForbidden) {
+		respondError(ctx, w, err, http.StatusForbidden)
 		return
 	}
 	respondError(ctx, w, err, http.StatusInternalServerError)

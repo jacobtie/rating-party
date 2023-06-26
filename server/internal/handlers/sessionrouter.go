@@ -7,20 +7,19 @@ import (
 
 	"github.com/jacobtie/rating-party/server/internal/controllers/session"
 	"github.com/jacobtie/rating-party/server/internal/platform/config"
-	"github.com/jacobtie/rating-party/server/internal/platform/db"
 	"github.com/jacobtie/rating-party/server/internal/platform/web"
-	"github.com/jacobtie/rating-party/server/internal/platform/werrors.go"
+	"github.com/jacobtie/rating-party/server/internal/platform/werrors"
 )
 
 type sessionRouter struct {
-	sessionController *session.SessionController
+	controller *session.Controller
 }
 
-func registerSessionRoutes(server *web.Service, cfg *config.Config, db *db.DB) {
-	sessionRouter := &sessionRouter{
-		sessionController: session.NewSessionController(cfg, db),
+func registerSessionRoutes(server *web.Service, cfg *config.Config) {
+	router := &sessionRouter{
+		controller: session.NewController(cfg),
 	}
-	server.Handle(http.MethodPost, "/signin", sessionRouter.SignIn)
+	server.Handle(http.MethodPost, "/signin", router.SignIn)
 }
 
 type SignInRequest struct {
@@ -32,10 +31,10 @@ func (s *sessionRouter) SignIn(w http.ResponseWriter, r *http.Request) error {
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return fmt.Errorf("[session.SignIn] failed to decode body with error: %v: %w", err, werrors.ErrBadRequest)
 	}
-	jwt, err := s.sessionController.SignIn(request.Passcode)
+	res, err := s.controller.SignIn(request.Passcode)
 	if err != nil {
 		return fmt.Errorf("[session.SignIn] failed to sign in: %w", err)
 	}
-	web.Respond(r.Context(), w, map[string]any{"jwt": jwt}, http.StatusOK)
+	web.Respond(r.Context(), w, res, http.StatusOK)
 	return nil
 }

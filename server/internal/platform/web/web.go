@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jacobtie/rating-party/server/internal/platform/contextvalue"
 	"github.com/julienschmidt/httprouter"
-	uuid "github.com/satori/go.uuid"
 )
 
 type Service struct {
@@ -28,7 +28,7 @@ func (s *Service) Handle(verb, path string, handler Handler, mw ...Middleware) {
 	wrappedHandler := wrapMiddleware(wrapMiddleware(handler, mw), s.globalMiddleware)
 	h := func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		requestID := uuid.NewV4().String()
+		requestID := uuid.New().String()
 		v := &contextvalue.Values{
 			RequestID:    requestID,
 			RequestStart: time.Now(),
