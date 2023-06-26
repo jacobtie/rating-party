@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
+	"github.com/jacobtie/rating-party/server/internal/platform/werrors"
 )
 
 func (c *Controller) GetAll(ctx context.Context) ([]*Game, error) {
@@ -60,6 +62,9 @@ func (c *Controller) GetSingle(ctx context.Context, gameID string) (*Game, error
 		&game.CreatedAt,
 		&game.UpdatedAt,
 	); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("[game.GetSingle] no game found: %w", werrors.ErrNotFound)
+		}
 		return nil, fmt.Errorf("[game.GetSingle] failed to scan row: %w", err)
 	}
 	return &game, nil
