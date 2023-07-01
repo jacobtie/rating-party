@@ -22,11 +22,11 @@ func registerWineRoutes(service *web.Service, cfg *config.Config, db *db.DB) {
 	router := &wineRouter{
 		controller: wine.NewController(cfg, db),
 	}
-	service.Handle(http.MethodGet, "/api/v1/games/:gameId/wines", router.getAllWines, middleware.MakeAuthorizationMW("read:wines"), middleware.AuthenticateMW)
-	service.Handle(http.MethodGet, "/api/v1/games/:gameId/wines/:wineId", router.getSingleWine, middleware.MakeAuthorizationMW("read:wine"), middleware.AuthenticateMW)
-	service.Handle(http.MethodPost, "/api/v1/games/:gameId/wines", router.createWine, middleware.MakeAuthorizationMW("create:wine"), middleware.AuthenticateMW)
-	service.Handle(http.MethodPut, "/api/v1/games/:gameId/wines/:wineId", router.updateWine, middleware.MakeAuthorizationMW("update:wine"), middleware.AuthenticateMW)
-	service.Handle(http.MethodDelete, "/api/v1/games/:gameId/wines/:wineId", router.deleteWine, middleware.MakeAuthorizationMW("delete:wine"), middleware.AuthenticateMW)
+	service.Handle(http.MethodGet, "/api/v1/games/:gameId/wines", router.getAllWines, middleware.MakeAuthorizationMW(false), middleware.AuthenticateMW)
+	service.Handle(http.MethodGet, "/api/v1/games/:gameId/wines/:wineId", router.getSingleWine, middleware.MakeAuthorizationMW(false), middleware.AuthenticateMW)
+	service.Handle(http.MethodPost, "/api/v1/games/:gameId/wines", router.createWine, middleware.MakeAuthorizationMW(true), middleware.AuthenticateMW)
+	service.Handle(http.MethodPut, "/api/v1/games/:gameId/wines/:wineId", router.updateWine, middleware.MakeAuthorizationMW(true), middleware.AuthenticateMW)
+	service.Handle(http.MethodDelete, "/api/v1/games/:gameId/wines/:wineId", router.deleteWine, middleware.MakeAuthorizationMW(true), middleware.AuthenticateMW)
 }
 
 func (wr *wineRouter) getAllWines(w http.ResponseWriter, r *http.Request) error {

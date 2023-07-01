@@ -50,3 +50,11 @@ func Get() (*Config, error) {
 	}
 	return cfg, nil
 }
+
+func MustGet() *Config {
+	cfg, err := Get()
+	if err != nil {
+		panic(err)
+	}
+	return cfg
+}

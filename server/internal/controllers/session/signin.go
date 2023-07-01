@@ -5,17 +5,16 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
-	"github.com/jacobtie/rating-party/server/internal/config"
 )
 
-func (s *Controller) SignIn(passcode string) (string, error) {
-	if passcode == s.cfg.AdminPasscode {
-		return getAdminToken(s.cfg)
+func (s *Controller) SignIn(username, passcode string) (string, error) {
+	if username == "admin" && passcode == s.cfg.AdminPasscode {
+		return s.signAdminToken()
 	}
-	return "", nil
+	return s.signInToGame(username, passcode)
 }
 
-func getAdminToken(cfg *config.Config) (string, error) {
+func (s *Controller) signAdminToken() (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		Audience:  "rating-party",
 		ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
@@ -23,9 +22,9 @@ func getAdminToken(cfg *config.Config) (string, error) {
 		IssuedAt:  time.Now().Unix(),
 		Subject:   "admin",
 	})
-	signedToken, err := token.SignedString([]byte(cfg.AdminJWTSecret))
+	signedToken, err := token.SignedString([]byte(s.cfg.AdminJWTSecret))
 	if err != nil {
-		return "", fmt.Errorf("[session.SignIn] failed to sign token: %w", err)
+		return "", fmt.Errorf("[session.signAdminToken] failed to sign token: %w", err)
 	}
 	return signedToken, nil
 }

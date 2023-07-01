@@ -3,7 +3,6 @@ package middleware
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/jacobtie/rating-party/server/internal/platform/contextvalue"
@@ -12,7 +11,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func MakeAuthorizationMW(scopes ...string) web.Middleware {
+func MakeAuthorizationMW(requiresAdmin bool) web.Middleware {
 	return func(next web.Handler) web.Handler {
 		return func(w http.ResponseWriter, r *http.Request) error {
 			ctx := r.Context()
@@ -21,6 +20,9 @@ func MakeAuthorizationMW(scopes ...string) web.Middleware {
 				return fmt.Errorf("[middleware.MakeAuthorizationMW] failed to cast context values")
 			}
 			token := v.JWT
+			if token == nil {
+				return fmt.Errorf("[middleware.MakeAuthorizationMW] no JWT in context, must call AuthenticateMW first")
+			}
 			claims, ok := token.Claims.(jwt.MapClaims)
 			if !ok {
 				return fmt.Errorf("[middleware.MakeAuthorizationMW] failed to cast jwt claims: %w", werrors.ErrForbidden)
@@ -32,12 +34,15 @@ func MakeAuthorizationMW(scopes ...string) web.Middleware {
 			if isAdmin {
 				return next(w, r)
 			}
+			if !isAdmin && requiresAdmin {
+				return fmt.Errorf("[middleware.MakeAuthorizationMW] requires admin: %w", werrors.ErrForbidden)
+			}
 			params := httprouter.ParamsFromContext(ctx)
 			if params == nil {
 				return fmt.Errorf("[middleware.MakeAuthorizationMW] failed to get params from context: %w", werrors.ErrForbidden)
 			}
 			gameID := params.ByName("gameId")
-			if err := checkScopes(gameID, scopes, claims); err != nil {
+			if err := checkScopes(gameID, claims); err != nil {
 				return err
 			}
 			return next(w, r)
@@ -60,7 +65,7 @@ func isJWTAdmin(claims jwt.MapClaims) (bool, error) {
 	return true, nil
 }
 
-func checkScopes(gameID string, scopes []string, claims jwt.MapClaims) error {
+func checkScopes(gameID string, claims jwt.MapClaims) error {
 	gameIDFieldRaw, ok := claims["gameId"]
 	if !ok {
 		return fmt.Errorf("[middleware.MakeAuthorizationMW] could not find gameId on jwt: %w", werrors.ErrForbidden)
@@ -71,24 +76,6 @@ func checkScopes(gameID string, scopes []string, claims jwt.MapClaims) error {
 	}
 	if gameIDField != gameID {
 		return fmt.Errorf("[middleware.MakeAuthorizationMW] gameId on jwt does not match gameId in url: %w", werrors.ErrForbidden)
-	}
-	jwtScopesFieldRaw, ok := claims["scope"]
-	if !ok {
-		return fmt.Errorf("[middleware.MakeAuthorizationMW] could not find scope on jwt: %w", werrors.ErrForbidden)
-	}
-	jwtScopesField, ok := jwtScopesFieldRaw.(string)
-	if !ok {
-		return fmt.Errorf("[middleware.MakeAuthorizationMW] scope field was not a string: %w", werrors.ErrForbidden)
-	}
-	jwtScopes := strings.Split(jwtScopesField, " ")
-	scopesSet := make(map[string]struct{}, len(jwtScopes))
-	for _, scope := range jwtScopes {
-		scopesSet[scope] = struct{}{}
-	}
-	for _, scope := range scopes {
-		if _, ok := scopesSet[scope]; !ok {
-			return fmt.Errorf("[middleware.MakeAuthorizationMW] missing required scope: %w", werrors.ErrForbidden)
-		}
 	}
 	return nil
 }

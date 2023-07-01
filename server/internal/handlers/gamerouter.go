@@ -23,11 +23,11 @@ func registerGameRoutes(service *web.Service, cfg *config.Config, db *db.DB) {
 	router := &gameRouter{
 		controller: game.NewController(cfg, db),
 	}
-	service.Handle(http.MethodGet, "/api/v1/games", router.getAllGames, middleware.MakeAuthorizationMW("read:games"), middleware.AuthenticateMW)
-	service.Handle(http.MethodGet, "/api/v1/games/:gameId", router.getSingleGame, middleware.MakeAuthorizationMW("read:game"), middleware.AuthenticateMW)
-	service.Handle(http.MethodPost, "/api/v1/games", router.createGame, middleware.MakeAuthorizationMW("create:game"), middleware.AuthenticateMW)
-	service.Handle(http.MethodPut, "/api/v1/games/:gameId", router.updateGame, middleware.MakeAuthorizationMW("update:game"), middleware.AuthenticateMW)
-	service.Handle(http.MethodDelete, "/api/v1/games/:gameId", router.deleteGame, middleware.MakeAuthorizationMW("delete:game"), middleware.AuthenticateMW)
+	service.Handle(http.MethodGet, "/api/v1/games", router.getAllGames, middleware.MakeAuthorizationMW(true), middleware.AuthenticateMW)
+	service.Handle(http.MethodGet, "/api/v1/games/:gameId", router.getSingleGame, middleware.MakeAuthorizationMW(false), middleware.AuthenticateMW)
+	service.Handle(http.MethodPost, "/api/v1/games", router.createGame, middleware.MakeAuthorizationMW(true), middleware.AuthenticateMW)
+	service.Handle(http.MethodPut, "/api/v1/games/:gameId", router.updateGame, middleware.MakeAuthorizationMW(true), middleware.AuthenticateMW)
+	service.Handle(http.MethodDelete, "/api/v1/games/:gameId", router.deleteGame, middleware.MakeAuthorizationMW(true), middleware.AuthenticateMW)
 }
 
 func (g *gameRouter) getAllGames(w http.ResponseWriter, r *http.Request) error {

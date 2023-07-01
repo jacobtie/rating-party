@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/jacobtie/rating-party/server/internal/config"
 	"github.com/jacobtie/rating-party/server/internal/platform/contextvalue"
 	"github.com/jacobtie/rating-party/server/internal/platform/werrors"
 )
@@ -36,8 +37,13 @@ func HandleError(ctx context.Context, w http.ResponseWriter, err error) {
 }
 
 func respondError(ctx context.Context, w http.ResponseWriter, err error, code int) {
+	cfg := config.MustGet()
+	responseMsg := err.Error()
+	if cfg.Environment == config.ENV_PROD {
+		responseMsg = http.StatusText(code)
+	}
 	response := errResponse{
-		Error: err.Error(),
+		Error: responseMsg,
 	}
 	v, ok := ctx.Value(contextvalue.KeyValues).(*contextvalue.Values)
 	if ok {

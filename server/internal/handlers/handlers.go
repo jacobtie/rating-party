@@ -11,7 +11,7 @@ import (
 
 func NewAPI(cfg *config.Config, db *db.DB) http.Handler {
 	service := web.NewService(middleware.ErrorHandlerMW, middleware.RequestLoggerMW)
-	registerSessionRoutes(service, cfg)
+	registerSessionRoutes(service, cfg, db)
 	registerGameRoutes(service, cfg, db)
 	registerWineRoutes(service, cfg, db)
 	return service
