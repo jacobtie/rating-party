@@ -1,7 +1,7 @@
 package session
 
 import (
-	"github.com/jacobtie/rating-party/server/internal/platform/config"
+	"github.com/jacobtie/rating-party/server/internal/config"
 )
 
 type Controller struct {

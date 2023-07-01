@@ -3,8 +3,8 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/jacobtie/rating-party/server/internal/config"
 	"github.com/jacobtie/rating-party/server/internal/middleware"
-	"github.com/jacobtie/rating-party/server/internal/platform/config"
 	"github.com/jacobtie/rating-party/server/internal/platform/db"
 	"github.com/jacobtie/rating-party/server/internal/platform/web"
 )

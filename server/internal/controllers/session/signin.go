@@ -5,11 +5,11 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
-	"github.com/jacobtie/rating-party/server/internal/platform/config"
+	"github.com/jacobtie/rating-party/server/internal/config"
 )
 
 func (s *Controller) SignIn(passcode string) (string, error) {
-	if passcode != s.cfg.AdminPasscode {
+	if passcode == s.cfg.AdminPasscode {
 		return getAdminToken(s.cfg)
 	}
 	return "", nil

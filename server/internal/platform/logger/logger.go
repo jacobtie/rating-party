@@ -3,7 +3,7 @@ package logger
 import (
 	"context"
 
-	"github.com/jacobtie/rating-party/server/internal/platform/config"
+	"github.com/jacobtie/rating-party/server/internal/config"
 	"github.com/jacobtie/rating-party/server/internal/platform/contextvalue"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"

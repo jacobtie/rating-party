@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/jacobtie/rating-party/server/internal/config"
 	"github.com/jacobtie/rating-party/server/internal/controllers/session"
-	"github.com/jacobtie/rating-party/server/internal/platform/config"
 	"github.com/jacobtie/rating-party/server/internal/platform/web"
 	"github.com/jacobtie/rating-party/server/internal/platform/werrors"
 )
@@ -35,6 +35,6 @@ func (s *sessionRouter) SignIn(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return fmt.Errorf("[session.SignIn] failed to sign in: %w", err)
 	}
-	web.Respond(r.Context(), w, res, http.StatusOK)
+	web.Respond(r.Context(), w, map[string]any{"jwt": res}, http.StatusOK)
 	return nil
 }
