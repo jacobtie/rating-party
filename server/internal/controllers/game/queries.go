@@ -25,6 +25,7 @@ func (c *Controller) GetAll(ctx context.Context) ([]*Game, error) {
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, fmt.Errorf("[game.GetAll] failed to query all games: %w", err)
 	}
+	defer rows.Close()
 	games := make([]*Game, 0)
 	for rows.Next() {
 		var game Game

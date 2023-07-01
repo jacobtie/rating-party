@@ -66,7 +66,6 @@ func validateExpiration(parsedToken *jwt.Token) error {
 	if !ok {
 		return fmt.Errorf("[middleware.AuthenticateMW] could not find exp on jwt: %w", werrors.ErrUnauthorized)
 	}
-	fmt.Printf("%+v\n", jwtEXPFieldRaw)
 	jwtEXPField, ok := jwtEXPFieldRaw.(float64)
 	if !ok {
 		return fmt.Errorf("[middleware.AuthenticateMW] exp field was not a number: %w", werrors.ErrUnauthorized)
