@@ -1,4 +1,4 @@
-package session
+package participant
 
 import (
 	"github.com/jacobtie/rating-party/server/internal/config"
@@ -6,13 +6,13 @@ import (
 )
 
 type Controller struct {
-	cfg *config.Config
 	db  *db.DB
+	cfg *config.Config
 }
 
 func NewController(cfg *config.Config, db *db.DB) *Controller {
 	return &Controller{
-		cfg: cfg,
 		db:  db,
+		cfg: cfg,
 	}
 }

@@ -40,6 +40,6 @@ func (s *sessionRouter) signIn(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return fmt.Errorf("[handlers.signIn] failed to sign in: %w", err)
 	}
-	web.Respond(r.Context(), w, map[string]any{"jwt": res}, http.StatusOK)
+	web.Respond(r.Context(), w, res, http.StatusOK)
 	return nil
 }

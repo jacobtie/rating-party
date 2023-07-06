@@ -61,13 +61,13 @@ func (g *gameRouter) getSingleGame(w http.ResponseWriter, r *http.Request) error
 	return nil
 }
 
-type createUpdateGameRequest struct {
+type createGameRequest struct {
 	GameName string `json:"gameName"`
 }
 
 func (g *gameRouter) createGame(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
-	var req createUpdateGameRequest
+	var req createGameRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return fmt.Errorf("[handlers.createGame] failed to decode request: %w", werrors.ErrBadRequest)
 	}
@@ -80,6 +80,11 @@ func (g *gameRouter) createGame(w http.ResponseWriter, r *http.Request) error {
 	}
 	web.Respond(ctx, w, game, http.StatusCreated)
 	return nil
+}
+
+type updateGameRequest struct {
+	GameName  string `json:"gameName"`
+	IsRunning bool   `json:"isRunning"`
 }
 
 func (g *gameRouter) updateGame(w http.ResponseWriter, r *http.Request) error {
@@ -95,14 +100,14 @@ func (g *gameRouter) updateGame(w http.ResponseWriter, r *http.Request) error {
 	if _, err := uuid.Parse(gameID); err != nil {
 		return fmt.Errorf("[handlers.updateGame] game ID was not a UUID: %w", werrors.ErrNotFound)
 	}
-	var req createUpdateGameRequest
+	var req updateGameRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return fmt.Errorf("[handlers.updateGame] failed to decode request: %w", werrors.ErrBadRequest)
 	}
 	if req.GameName == "" {
 		return fmt.Errorf("[handlers.updateGame] game name was empty: %w", werrors.ErrBadRequest)
 	}
-	if err := g.controller.Update(ctx, gameID, req.GameName); err != nil {
+	if err := g.controller.Update(ctx, gameID, req.GameName, req.IsRunning); err != nil {
 		return fmt.Errorf("[handlers.updateGame]: %w", err)
 	}
 	web.Respond(ctx, w, nil, http.StatusNoContent)

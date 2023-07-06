@@ -27,3 +27,20 @@ func New(un, pw, host, dbName string) (*DB, error) {
 	}
 	return &DB{mysql}, nil
 }
+
+func (db *DB) WithTransaction(fn func(*sqlx.Tx) error) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		return fmt.Errorf("[db.WithTransaction] failed to begin transaction: %w", err)
+	}
+	if err := fn(tx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return fmt.Errorf("[db.WithTransaction] failed to rollback transaction: %w", err)
+		}
+		return err
+	}
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("[db.WithTransaction] failed to commit transaction: %w", err)
+	}
+	return nil
+}

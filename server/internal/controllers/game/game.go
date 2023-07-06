@@ -11,12 +11,15 @@ import (
 )
 
 type Controller struct {
-	db  *db.DB
 	cfg *config.Config
+	db  *db.DB
 }
 
 func NewController(cfg *config.Config, db *db.DB) *Controller {
-	return &Controller{db, cfg}
+	return &Controller{
+		cfg: cfg,
+		db:  db,
+	}
 }
 
 func (c *Controller) GenerateGameCode() string {
