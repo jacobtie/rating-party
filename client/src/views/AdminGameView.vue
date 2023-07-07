@@ -2,8 +2,9 @@
 import { useSession } from '@/composables/session';
 import router from '@/router';
 import { deleteGame, getGame, updateGame, type Game } from '@/services/game-service';
+import { getAllRatings, type Rating } from '@/services/rating-service';
 import { createWine, deleteWine, getAllWines, type Wine } from '@/services/wine-service';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 const { getUser, deleteUser } = useSession();
 
@@ -15,9 +16,59 @@ if (!user || !user.isAdmin || !user.jwt) {
 }
 
 const game = ref<Game | null>(null);
-
 const gameId = `${router.currentRoute.value.params.gameId}`;
-
+const ratings = ref<Rating[]>([]);
+const usernames = computed(() => {
+  const usernames = new Set<string>();
+  for (const rating of ratings.value) {
+    usernames.add(rating.username);
+  }
+  return Array.from(usernames);
+});
+const results = computed(() => {
+  const wineAggMap: Record<string, Record<string, number>> = {};
+  for (const rating of ratings.value) {
+    // Skip empty ratings
+    if (
+      rating.sightRating === 0 &&
+      rating.aromaRating === 0 &&
+      rating.tasteRating === 0 &&
+      rating.overallRating === 0 &&
+      rating.comments === ''
+    ) continue;
+    if (!wineAggMap[rating.wineId]) wineAggMap[rating.wineId] = {};
+    wineAggMap[rating.wineId][rating.username] = rating.sightRating + rating.aromaRating + rating.tasteRating + rating.overallRating;
+  }
+  const rows: Record<string, unknown>[] = [];
+  for (const [wineId, wineScores] of Object.entries(wineAggMap)) {
+    const wine = wines.value.find((wine) => wine.wineId === wineId);
+    if (!wine) continue;
+    const row: Record<string, unknown> = {
+      wineId: wine.wineId,
+      wineName: wine.wineName,
+      wineCode: wine.wineCode,
+      wineYear: wine.wineYear,
+    };
+    let sum = 0;
+    let count = 0;
+    for (const username of usernames.value) {
+      row[username] = wineScores[username] || 0;
+      if (!wineScores[username]) continue;
+      sum += wineScores[username];
+      count += 1;
+    }
+    row.avg = count === 0 ? 0 : Math.round((sum / count) * 100) / 100;
+    rows.push(row);
+  }
+  rows.sort((a, b) => {
+    if (a.avg === b.avg) return 0;
+    return (a.avg as number) > (b.avg as number) ? -1 : 1;
+  });
+  for (let i = 0; i < rows.length; i++) {
+    rows[i].rank = i + 1;
+  }
+  return rows;
+});
 (async () => {
   try {
     const gameFromServer = await getGame(user.jwt, gameId);
@@ -27,6 +78,15 @@ const gameId = `${router.currentRoute.value.params.gameId}`;
       return;
     }
     game.value = gameFromServer;
+    if (!game.value!.isRunning) {
+      const ratingsFromServer = await getAllRatings(user.jwt, gameId);
+      if (ratingsFromServer === false) {
+        deleteUser();
+        router.push('/');
+        return;
+      }
+      ratings.value = ratingsFromServer;
+    }
   } catch (err) {
     console.error(err);
   }
@@ -36,6 +96,15 @@ const switchGameStatus = async () => {
   try {
     await updateGame(user.jwt, gameId, game.value!.gameName, !game.value!.isRunning);
     game.value!.isRunning = !game.value!.isRunning;
+    if (!game.value?.isRunning) {
+      const ratingsFromServer = await getAllRatings(user.jwt, gameId);
+      if (ratingsFromServer === false) {
+        deleteUser();
+        router.push('/');
+        return;
+      }
+      ratings.value = ratingsFromServer;
+    }
   } catch (err) {
     console.error(err);
   }
@@ -110,7 +179,7 @@ const logout = () => {
     <h1 class="main-title">{{ game.gameName }}</h1>
     <h1 class="main-title">Code: {{ game.gameCode }}</h1>
     <v-btn size="x-large" :color="game.isRunning ? 'red' : 'green'" @click="switchGameStatus">{{ game.isRunning ? 'Stop Party' : 'Start Party' }}</v-btn>
-    <div class="block">
+    <div v-if="!game.isRunning" class="block">
       <v-text-field v-model="newWineName" label="Wine Name" variant="outlined" @keyup.enter="addWine"></v-text-field>
       <v-text-field v-model="newWineCode" label="Wine Code (ex. A)" variant="outlined" @keyup.enter="addWine"></v-text-field>
       <v-text-field v-model.number="newWineYear" label="Wine Code (ex. A)" variant="outlined" @keyup.enter="addWine"></v-text-field>
@@ -133,6 +202,31 @@ const logout = () => {
             <td>{{ wine.wineCode }}</td>
             <td>{{ wine.wineYear }}</td>
             <td><v-btn color="red" size="small" @click="removeWine(wine.wineId)">Delete</v-btn></td>
+          </tr>
+        </tbody>
+      </v-table>
+    </div>
+    <div v-if="!game.isRunning" class="block">
+      <h2>Results</h2>
+      <v-table>
+        <thead>
+          <tr>
+            <th>Wine Name</th>
+            <th>Wine Code</th>
+            <th>Wine Year</th>
+            <th v-for="username of usernames" :key="username">{{ username }}</th>
+            <th>Average</th>
+            <th>Rank</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="res of results" :key="(res.wineId as string)">
+            <td>{{ res.wineName }}</td>
+            <td>{{ res.wineCode }}</td>
+            <td>{{ res.wineYear }}</td>
+            <td v-for="username of usernames" :key="username">{{ res[username] }}</td>
+            <td>{{ res.avg }}</td>
+            <td>{{ res.rank }}</td>
           </tr>
         </tbody>
       </v-table>

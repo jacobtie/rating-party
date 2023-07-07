@@ -145,7 +145,7 @@ const logout = () => {
       </div>
     </div>
     <div v-else class="block">
-      <p>Party is stopped. Please refresh when the host announces that the party has started.</p>
+      <p>Party is stopped. Please refresh when the host announces that the party has started or has shared the results.</p>
     </div>
     <div class="block">
       <v-btn variant="tonal" @click="logout">Logout</v-btn>

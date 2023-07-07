@@ -65,11 +65,11 @@ func (rr *ratingRouter) getRatings(w http.ResponseWriter, r *http.Request) error
 }
 
 type putRatingRequest struct {
-	SightRating   int    `json:"sightRating"`
-	AromaRating   int    `json:"aromaRating"`
-	TasteRating   int    `json:"tasteRating"`
-	OverallRating int    `json:"overallRating"`
-	Comments      string `json:"comments"`
+	SightRating   float64 `json:"sightRating"`
+	AromaRating   float64 `json:"aromaRating"`
+	TasteRating   float64 `json:"tasteRating"`
+	OverallRating float64 `json:"overallRating"`
+	Comments      string  `json:"comments"`
 }
 
 func (rr *ratingRouter) putRating(w http.ResponseWriter, r *http.Request) error {

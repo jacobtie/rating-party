@@ -14,9 +14,10 @@ func (c *Controller) GetAllByGameID(ctx context.Context, gameID string) ([]*Rati
 	rows, err := c.db.DB.QueryxContext(ctx, `
 		SELECT
 			BIN_TO_UUID(rating_id),
-			BIN_TO_UUID(game_id),
-			BIN_TO_UUID(participant_id),
+			BIN_TO_UUID(r.game_id),
+			BIN_TO_UUID(r.participant_id),
 			BIN_TO_UUID(wine_id),
+			p.username,
 			sight_rating,
 			aroma_rating,
 			taste_rating,
@@ -24,9 +25,10 @@ func (c *Controller) GetAllByGameID(ctx context.Context, gameID string) ([]*Rati
 			(sight_rating + aroma_rating + taste_rating + overall_rating) AS total_rating,
 			comments
 		FROM
-			rating
+			rating r
+			INNER JOIN participant p ON r.participant_id = p.participant_id
 		WHERE
-			game_id = UUID_TO_BIN(?)
+			r.game_id = UUID_TO_BIN(?)
 		;
 	`, gameID)
 	if err != nil {
@@ -44,6 +46,7 @@ func (c *Controller) GetAllByGameID(ctx context.Context, gameID string) ([]*Rati
 			&rating.GameID,
 			&rating.ParticipantID,
 			&rating.WineID,
+			&rating.Username,
 			&rating.SightRating,
 			&rating.AromaRating,
 			&rating.TasteRating,
