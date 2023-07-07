@@ -161,7 +161,7 @@ const logout = () => {
     <div v-if="!game.isRunning" class="block">
       <v-text-field v-model="newWineName" label="Wine Name" variant="outlined" @keyup.enter="addWine"></v-text-field>
       <v-text-field v-model="newWineCode" label="Wine Code (ex. A)" variant="outlined" @keyup.enter="addWine"></v-text-field>
-      <v-text-field v-model.number="newWineYear" label="Wine Code (ex. A)" variant="outlined" @keyup.enter="addWine"></v-text-field>
+      <v-text-field v-model.number="newWineYear" label="Wine Year" variant="outlined" @keyup.enter="addWine"></v-text-field>
       <v-btn size="x-large" variant="tonal" @click="addWine">Add Wine</v-btn>
     </div>
     <div v-if="wines.length > 0" class="block">
