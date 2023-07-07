@@ -1,8 +1,10 @@
 package main
 
 import (
+	"embed"
 	"errors"
 	"fmt"
+	"io/fs"
 	"net/http"
 
 	"github.com/jacobtie/rating-party/server/internal/config"
@@ -18,6 +20,9 @@ var (
 	BUILD_DATE     = "unknown"
 	BUILD_GIT_HASH = "unknown"
 )
+
+//go:embed dist
+var clientDir embed.FS
 
 func main() {
 	if err := run(); err != nil {
@@ -36,9 +41,13 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	strippedClientDir, err := fs.Sub(clientDir, "dist")
+	if err != nil {
+		return fmt.Errorf("failed to strip client directory prefix: %w", err)
+	}
 	server := &http.Server{
 		Addr:         cfg.Web.APIHost,
-		Handler:      handlers.NewAPI(cfg, db),
+		Handler:      handlers.NewAPI(cfg, db, strippedClientDir),
 		ReadTimeout:  cfg.Web.ReadTimeout,
 		WriteTimeout: cfg.Web.WriteTimeout,
 	}

@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"io/fs"
 	"net/http"
 	"time"
 
@@ -60,4 +61,11 @@ func (s *Service) Handle(verb, path string, handler Handler, mw ...Middleware) {
 
 func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(w, r)
+}
+
+// ServeSPA sets up a static file server
+// that routes any not found requests to index.html for client side routing
+func (s *Service) ServeSPA(root fs.FS) {
+	fileServer := &spaFS{fileSystem: root, httpFS: http.FileServer(http.FS(root))}
+	s.router.NotFound = fileServer
 }

@@ -59,8 +59,9 @@ func (c *Controller) GetRatingsResult(ctx context.Context, gameID string, includ
 	rows := make([]map[string]any, 0)
 	for wineID, wineScores := range wineAggMap {
 		wine, err := c.wineController.GetSingleWine(ctx, wineID)
+		// Wine may have been deleted, do not include in results
 		if err != nil {
-			return nil, fmt.Errorf("[controllers.rating.GetRatingsResult] could not get wine by id: %w", err)
+			continue
 		}
 		row := make(map[string]any)
 		row["wineID"] = wine.WineID
