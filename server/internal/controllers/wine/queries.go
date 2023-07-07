@@ -12,9 +12,12 @@ import (
 
 func (c *Controller) GetAllWines(ctx context.Context, gameID string) ([]*Wine, error) {
 	rows, err := c.db.QueryxContext(ctx, `
-		SELECT BIN_TO_UUID(wine_id), wine_name, wine_code, wine_year FROM wine WHERE game_id = UUID_TO_BIN(?)
+		SELECT BIN_TO_UUID(wine_id), wine_name, wine_code, wine_year FROM wine WHERE game_id = UUID_TO_BIN(?) ORDER BY wine_code ASC
 	`, gameID)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return []*Wine{}, nil
+		}
 		return nil, fmt.Errorf("[wine.GetAllWines] failed to query: %w", err)
 	}
 	defer rows.Close()

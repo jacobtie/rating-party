@@ -19,10 +19,11 @@ func (s *Controller) signInToGame(username, passcode string) (*SignInResponse, e
 	}
 	var token string
 	if err := s.db.WithTransaction(func(tx *sqlx.Tx) error {
-		if err := s.createUserIfNotExistsTx(tx, username, gameID); err != nil {
+		userID, err := s.createUserIfNotExistsTx(tx, username, gameID)
+		if err != nil {
 			return fmt.Errorf("[session.signInToGame] failed to create participant: %w", err)
 		}
-		token, err = s.signUserToken(username, gameID)
+		token, err = s.signUserToken(userID, gameID)
 		if err != nil {
 			return fmt.Errorf("[session.signInToGame] failed to sign token: %w", err)
 		}
@@ -48,13 +49,13 @@ func (s *Controller) getGameID(passcode string) (string, error) {
 	return gameID, nil
 }
 
-func (s *Controller) signUserToken(username, gameID string) (string, error) {
+func (s *Controller) signUserToken(userID, gameID string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"aud":    "rating-party",
 		"exp":    time.Now().Add(24 * time.Hour).Unix(),
 		"iss":    "rating-party",
 		"iat":    time.Now().Unix(),
-		"sub":    username,
+		"sub":    userID,
 		"gameId": gameID,
 	})
 	signedToken, err := token.SignedString([]byte(s.cfg.AdminJWTSecret))
@@ -64,12 +65,12 @@ func (s *Controller) signUserToken(username, gameID string) (string, error) {
 	return signedToken, nil
 }
 
-func (*Controller) createUserIfNotExistsTx(tx *sqlx.Tx, username, gameID string) error {
+func (*Controller) createUserIfNotExistsTx(tx *sqlx.Tx, username, gameID string) (string, error) {
 	participantID := uuid.New().String()
 	if _, err := tx.Exec(`
 		INSERT IGNORE INTO participant (participant_id, username, game_id) VALUES (UUID_TO_BIN(?), ?, UUID_TO_BIN(?))
 	`, participantID, username, gameID); err != nil {
-		return fmt.Errorf("[session.createUser] failed to create participant: %w", err)
+		return "", fmt.Errorf("[session.createUser] failed to create participant: %w", err)
 	}
-	return nil
+	return participantID, nil
 }

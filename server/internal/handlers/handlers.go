@@ -15,5 +15,6 @@ func NewAPI(cfg *config.Config, db *db.DB) http.Handler {
 	registerGameRoutes(service, cfg, db)
 	registerWineRoutes(service, cfg, db)
 	registerParticipantRoutes(service, cfg, db)
+	registerRatingRoutes(service, cfg, db)
 	return service
 }

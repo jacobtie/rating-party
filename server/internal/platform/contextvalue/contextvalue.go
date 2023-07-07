@@ -12,6 +12,8 @@ const KeyValues ctxKey = 1
 
 type Values struct {
 	JWT          *jwt.Token
+	UserID       string
+	IsAdmin      bool
 	RequestID    string
 	RequestStart time.Time
 	StatusCode   int

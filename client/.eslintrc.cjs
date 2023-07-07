@@ -16,5 +16,6 @@ module.exports = {
     'quotes': ['error', 'single'],
     'comma-dangle': [1, 'always-multiline'],
     'object-curly-spacing': [1, 'always'],
+    'vue/no-mutating-props': 'off',
   },
 };

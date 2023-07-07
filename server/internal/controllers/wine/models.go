@@ -2,7 +2,7 @@ package wine
 
 type Wine struct {
 	WineID   string `json:"wineId"`
-	WineName string `json:"wineName"`
+	WineName string `json:"wineName,omitempty"`
 	WineCode string `json:"wineCode"`
-	WineYear int    `json:"wineYear"`
+	WineYear int    `json:"wineYear,omitempty"`
 }

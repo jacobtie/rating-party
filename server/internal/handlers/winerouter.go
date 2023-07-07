@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/jacobtie/rating-party/server/internal/config"
 	"github.com/jacobtie/rating-party/server/internal/controllers/wine"
 	"github.com/jacobtie/rating-party/server/internal/middleware"
+	"github.com/jacobtie/rating-party/server/internal/platform/contextvalue"
 	"github.com/jacobtie/rating-party/server/internal/platform/db"
 	"github.com/jacobtie/rating-party/server/internal/platform/web"
 	"github.com/jacobtie/rating-party/server/internal/platform/werrors"
@@ -33,9 +35,25 @@ func (wr *wineRouter) getAllWines(w http.ResponseWriter, r *http.Request) error 
 	ctx := r.Context()
 	params := httprouter.ParamsFromContext(ctx)
 	gameID := params.ByName("gameId")
+	if gameID == "" {
+		return fmt.Errorf("[wineRouter.getAllWines] game id is required: %w", werrors.ErrBadRequest)
+	}
+	if _, err := uuid.Parse(gameID); err != nil {
+		return fmt.Errorf("[wineRouter.getAllWines] invalid game id: %w", werrors.ErrBadRequest)
+	}
+	v, ok := ctx.Value(contextvalue.KeyValues).(*contextvalue.Values)
+	if !ok {
+		return fmt.Errorf("[wineRouter.getAllWines] failed to get context values")
+	}
 	wines, err := wr.controller.GetAllWines(ctx, gameID)
 	if err != nil {
 		return fmt.Errorf("[wineRouter.getAllWines] failed to get all wines: %w", err)
+	}
+	if !v.IsAdmin {
+		for i := range wines {
+			wines[i].WineName = ""
+			wines[i].WineYear = 0
+		}
 	}
 	web.Respond(ctx, w, wines, http.StatusOK)
 	return nil

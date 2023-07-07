@@ -10,7 +10,7 @@ import (
 type SignInResponse struct {
 	JWT     string  `json:"jwt"`
 	IsAdmin *bool   `json:"isAdmin,omitempty"`
-	GameID  *string `json:"gameID,omitempty"`
+	GameID  *string `json:"gameId,omitempty"`
 }
 
 func (s *Controller) SignIn(username, passcode string) (*SignInResponse, error) {

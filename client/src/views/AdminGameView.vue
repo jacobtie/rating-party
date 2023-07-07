@@ -85,6 +85,7 @@ const addWine = async () => {
 };
 
 const removeWine = async (wineId: string) => {
+  if (!window.confirm('Are you sure you want to delete this wine?')) return;
   try {
     await deleteWine(user.jwt, gameId, wineId);
     wines.value = wines.value.filter((wine) => wine.wineId !== wineId);
@@ -98,6 +99,7 @@ const goBack = () => {
 };
 
 const logout = () => {
+  if (!window.confirm('Are you sure you want to log out?')) return;
   deleteUser();
   router.push('/');
 };
@@ -107,7 +109,7 @@ const logout = () => {
   <div v-if="game" class="full-height">
     <h1 class="main-title">{{ game.gameName }}</h1>
     <h1 class="main-title">Code: {{ game.gameCode }}</h1>
-    <v-btn size="x-large" :color="game.isRunning ? 'red' : 'green'" @click="switchGameStatus">{{ game.isRunning ? 'Stop Game' : 'Start Game' }}</v-btn>
+    <v-btn size="x-large" :color="game.isRunning ? 'red' : 'green'" @click="switchGameStatus">{{ game.isRunning ? 'Stop Party' : 'Start Party' }}</v-btn>
     <div class="block">
       <v-text-field v-model="newWineName" label="Wine Name" variant="outlined" @keyup.enter="addWine"></v-text-field>
       <v-text-field v-model="newWineCode" label="Wine Code (ex. A)" variant="outlined" @keyup.enter="addWine"></v-text-field>

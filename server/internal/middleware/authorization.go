@@ -27,11 +27,12 @@ func MakeAuthorizationMW(requiresAdmin bool) web.Middleware {
 			if !ok {
 				return fmt.Errorf("[middleware.MakeAuthorizationMW] failed to cast jwt claims: %w", werrors.ErrForbidden)
 			}
-			isAdmin, err := isJWTAdmin(claims)
+			isAdmin, userID, err := getIsJWTAdminOrUserID(claims)
 			if err != nil {
 				return err
 			}
 			if isAdmin {
+				v.IsAdmin = true
 				return next(w, r)
 			}
 			if !isAdmin && requiresAdmin {
@@ -45,24 +46,25 @@ func MakeAuthorizationMW(requiresAdmin bool) web.Middleware {
 			if err := checkScopes(gameID, claims); err != nil {
 				return err
 			}
+			v.UserID = userID
 			return next(w, r)
 		}
 	}
 }
 
-func isJWTAdmin(claims jwt.MapClaims) (bool, error) {
+func getIsJWTAdminOrUserID(claims jwt.MapClaims) (bool, string, error) {
 	jwtSubFieldRaw, ok := claims["sub"]
 	if !ok {
-		return false, nil
+		return false, "", nil
 	}
 	jwtSubField, ok := jwtSubFieldRaw.(string)
 	if !ok {
-		return false, fmt.Errorf("[middleware.MakeAuthorizationMW] failed to parse sub field as a string: %w", werrors.ErrForbidden)
+		return false, "", fmt.Errorf("[middleware.MakeAuthorizationMW] failed to parse sub field as a string: %w", werrors.ErrForbidden)
 	}
 	if jwtSubField != "admin" {
-		return false, nil
+		return false, jwtSubField, nil
 	}
-	return true, nil
+	return true, "", nil
 }
 
 func checkScopes(gameID string, claims jwt.MapClaims) error {
