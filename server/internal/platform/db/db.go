@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -15,18 +15,18 @@ type DB struct {
 }
 
 func New(un, pw, host, dbName string) (*DB, error) {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=true", un, pw, host, dbName)
-	mysql, err := sqlx.Open("mysql", dsn)
+	dsn := fmt.Sprintf("postgresql://%s:%s@%s/%s", un, pw, host, dbName)
+	postgres, err := sqlx.Open("pgx", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("[db.New] could not open connection to DB: %w", err)
 	}
 	// Test the connection
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	if err := mysql.PingContext(ctx); err != nil {
+	if err := postgres.PingContext(ctx); err != nil {
 		return nil, fmt.Errorf("[db.New] could not complete initial DB ping: %w", err)
 	}
-	return &DB{mysql}, nil
+	return &DB{postgres}, nil
 }
 
 func (db *DB) WithTransaction(ctx context.Context, fn func(*sqlx.Tx) error) error {

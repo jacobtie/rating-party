@@ -3,7 +3,7 @@
 USE ratingparty;
 
 CREATE TABLE game (
-    game_id BINARY(16) DEFAULT (UUID_TO_BIN(UUID())),
+    game_id UUID,
     game_name VARCHAR(255) NOT NULL,
     game_code VARCHAR(255) NOT NULL,
     is_running BOOLEAN NOT NULL DEFAULT FALSE,
@@ -14,8 +14,8 @@ CREATE TABLE game (
 );
 
 CREATE TABLE participant (
-    participant_id BINARY(16) DEFAULT (UUID_TO_BIN(UUID())),
-    game_id BINARY(16) NOT NULL,
+    participant_id UUID,
+    game_id UUID NOT NULL,
     username VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
@@ -24,11 +24,11 @@ CREATE TABLE participant (
 );
 
 CREATE TABLE wine (
-    wine_id BINARY(16) DEFAULT (UUID_TO_BIN(UUID())),
+    wine_id UUID,
     wine_name VARCHAR(255) NOT NULL,
     wine_code VARCHAR(255) NOT NULL,
     wine_year INT NOT NULL,
-    game_id BINARY(16) NOT NULL,
+    game_id UUID NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
     PRIMARY KEY (wine_id),
@@ -36,10 +36,10 @@ CREATE TABLE wine (
 );
 
 CREATE TABLE rating (
-    rating_id BINARY(16) DEFAULT (UUID_TO_BIN(UUID())),
-    game_id BINARY(16) NOT NULL,
-    participant_id BINARY(16) NOT NULL,
-    wine_id BINARY(16) NOT NULL,
+    rating_id UUID,
+    game_id UUID NOT NULL,
+    participant_id UUID NOT NULL,
+    wine_id UUID NOT NULL,
     sight_rating FLOAT NOT NULL,
     aroma_rating FLOAT NOT NULL,
     taste_rating FLOAT NOT NULL,

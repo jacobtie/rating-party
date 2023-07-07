@@ -9,7 +9,7 @@ import (
 
 func (c *Controller) GetAllParticipantsByGameID(ctx context.Context, gameID string) ([]*Participant, error) {
 	rows, err := c.db.DB.QueryxContext(ctx, `
-		SELECT participant_id, game_id, username FROM participant WHERE game_id = UUID_TO_BIN(?)
+		SELECT participant_id, game_id, username FROM participant WHERE game_id = ?
 	`, gameID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

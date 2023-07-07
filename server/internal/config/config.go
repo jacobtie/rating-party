@@ -18,11 +18,10 @@ type Config struct {
 		WriteTimeout time.Duration `default:"15s" envconfig:"WRITE_TIMEOUT"`
 	}
 	DB struct {
-		DriverName string `default:"mysql" envconfig:"DRIVER_NAME"`
-		DBUser     string `default:"root" envconfig:"DB_USER"`
-		DBPass     string `default:"" envconfig:"DB_PASS"`
-		DBURI      string `default:"localhost:3306" envconfig:"DB_URI"`
-		DBName     string `default:"ratingparty" envconfig:"DB_NAME"`
+		DBUser string `default:"postgres" envconfig:"DB_USER"`
+		DBPass string `default:"postgres" envconfig:"DB_PASS"`
+		DBURI  string `default:"localhost:5432" envconfig:"DB_URI"`
+		DBName string `default:"ratingparty" envconfig:"DB_NAME"`
 	}
 	AdminPasscode  string `default:"ivory" envconfig:"ADMIN_PASSCODE"`
 	AdminJWTSecret string `default:"ebony" envconfig:"ADMIN_JWT_SECRET"`

@@ -13,7 +13,7 @@ import (
 func (c *Controller) GetAll(ctx context.Context) ([]*Game, error) {
 	rows, err := c.db.DB.QueryxContext(ctx, `
 		SELECT
-			BIN_TO_UUID(game_id),
+			game_id,
 			game_name,
 			game_code,
 			is_running,
@@ -49,7 +49,7 @@ func (c *Controller) GetAll(ctx context.Context) ([]*Game, error) {
 func (c *Controller) GetSingle(ctx context.Context, gameID string) (*Game, error) {
 	row := c.db.DB.QueryRowxContext(ctx, `
 		SELECT
-			BIN_TO_UUID(game_id),
+			game_id,
 			game_name,
 			game_code,
 			is_running,

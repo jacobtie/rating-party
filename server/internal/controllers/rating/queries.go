@@ -13,10 +13,10 @@ import (
 func (c *Controller) GetAllByGameID(ctx context.Context, gameID string) ([]*Rating, error) {
 	rows, err := c.db.DB.QueryxContext(ctx, `
 		SELECT
-			BIN_TO_UUID(rating_id),
-			BIN_TO_UUID(r.game_id),
-			BIN_TO_UUID(r.participant_id),
-			BIN_TO_UUID(wine_id),
+			rating_id,
+			r.game_id,
+			r.participant_id,
+			wine_id,
 			p.username,
 			sight_rating,
 			aroma_rating,
@@ -28,7 +28,7 @@ func (c *Controller) GetAllByGameID(ctx context.Context, gameID string) ([]*Rati
 			rating r
 			INNER JOIN participant p ON r.participant_id = p.participant_id
 		WHERE
-			r.game_id = UUID_TO_BIN(?)
+			r.game_id = ?
 		;
 	`, gameID)
 	if err != nil {
@@ -64,10 +64,10 @@ func (c *Controller) GetAllByGameID(ctx context.Context, gameID string) ([]*Rati
 func (c *Controller) GetAllByGameIDAndParticipantID(ctx context.Context, gameID, participantID string) ([]*Rating, error) {
 	rows, err := c.db.DB.QueryxContext(ctx, `
 		SELECT
-			BIN_TO_UUID(rating_id),
-			BIN_TO_UUID(game_id),
-			BIN_TO_UUID(participant_id),
-			BIN_TO_UUID(wine_id),
+			rating_id,
+			game_id,
+			participant_id,
+			wine_id,
 			sight_rating,
 			aroma_rating,
 			taste_rating,
@@ -77,8 +77,8 @@ func (c *Controller) GetAllByGameIDAndParticipantID(ctx context.Context, gameID,
 		FROM
 			rating
 		WHERE
-			game_id = UUID_TO_BIN(?)
-			AND participant_id = UUID_TO_BIN(?)
+			game_id = ?
+			AND participant_id = ?
 		;
 	`, gameID, participantID)
 	if err != nil {
@@ -139,10 +139,10 @@ func (c *Controller) CreateRating(ctx context.Context, rating *Rating) (*Rating,
 			overall_rating,
 			comments
 		) VALUES (
-			UUID_TO_BIN(?),
-			UUID_TO_BIN(?),
-			UUID_TO_BIN(?),
-			UUID_TO_BIN(?),
+			?,
+			?,
+			?,
+			?,
 			?,
 			?,
 			?,
@@ -171,7 +171,7 @@ func (c *Controller) UpdateRating(ctx context.Context, ratingID string, rating *
 			overall_rating = ?,
 			comments = ?
 		WHERE
-			rating_id = UUID_TO_BIN(?)
+			rating_id = ?
 		;
 	`, rating.SightRating, rating.AromaRating, rating.TasteRating, rating.OverallRating, rating.Comments, ratingID); err != nil {
 		return nil, fmt.Errorf("[rating.UpdateRating] failed to update rating: %w", err)
@@ -186,10 +186,10 @@ func (c *Controller) UpdateRating(ctx context.Context, ratingID string, rating *
 func (c *Controller) GetRatingByParticipantIDAndWineID(ctx context.Context, participantID, wineID string) (*Rating, error) {
 	row := c.db.DB.QueryRowxContext(ctx, `
 		SELECT
-			BIN_TO_UUID(rating_id),
-			BIN_TO_UUID(game_id),
-			BIN_TO_UUID(participant_id),
-			BIN_TO_UUID(wine_id),
+			rating_id,
+			game_id,
+			participant_id,
+			wine_id,
 			sight_rating,
 			aroma_rating,
 			taste_rating,
@@ -198,8 +198,8 @@ func (c *Controller) GetRatingByParticipantIDAndWineID(ctx context.Context, part
 		FROM
 			rating
 		WHERE
-			participant_id = UUID_TO_BIN(?)
-			AND wine_id = UUID_TO_BIN(?)
+			participant_id = ?
+			AND wine_id = ?
 		;
 	`, participantID, wineID)
 	var rating Rating
