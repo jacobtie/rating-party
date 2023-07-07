@@ -3,7 +3,7 @@ import WineRating from '@/components/WineRating.vue';
 import { useSession } from '@/composables/session';
 import router from '@/router';
 import { getGame, type Game } from '@/services/game-service';
-import { getAllRatings, putRating, type Rating } from '@/services/rating-service';
+import { getAllRatings, getResults, putRating, type Rating } from '@/services/rating-service';
 import { getAllWines, type Wine } from '@/services/wine-service';
 import { ref } from 'vue';
 
@@ -38,6 +38,7 @@ const game = ref<Game | null>(null);
 
 const wines = ref<Wine[]>([]);
 const ratings = ref<Rating[]>([]);
+const results = ref<Record<string, unknown>[]>([]);
 (async () => {
   const { gameId } = user;
   if (!gameId) {
@@ -79,6 +80,14 @@ const ratings = ref<Rating[]>([]);
       const wineB = wines.value.find((wine) => wine.wineId === b.wineId)!;
       return wineA.wineCode.localeCompare(wineB.wineCode);
     });
+    if (!game.value?.areResultsShared) return;
+    const resultsFromServer = await getResults(user.jwt, user.gameId!);
+    if (resultsFromServer === false) {
+      deleteUser();
+      router.push('/');
+      return;
+    }
+    results.value = resultsFromServer;
   } catch (err) {
     console.error(err);
   }
@@ -144,8 +153,31 @@ const logout = () => {
         <v-btn color="green" @click="saveRatings">Save</v-btn>
       </div>
     </div>
-    <div v-else class="block">
+    <div v-else-if="!game.areResultsShared" class="block">
       <p>Party is stopped. Please refresh when the host announces that the party has started or has shared the results.</p>
+    </div>
+    <div v-else class="block">
+      <h2>Results</h2>
+      <v-table class="results-table">
+        <thead>
+          <tr>
+            <th>Wine Name</th>
+            <th>Wine Code</th>
+            <th>Wine Year</th>
+            <th>Average</th>
+            <th>Rank</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="res of results" :key="(res.wineId as string)">
+            <td>{{ res.wineName }}</td>
+            <td>{{ res.wineCode }}</td>
+            <td>{{ res.wineYear }}</td>
+            <td>{{ res.avg }}</td>
+            <td>{{ res.rank }}</td>
+          </tr>
+        </tbody>
+      </v-table>
     </div>
     <div class="block">
       <v-btn variant="tonal" @click="logout">Logout</v-btn>

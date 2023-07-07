@@ -21,7 +21,7 @@ const ratings = ref<Rating[]>([]);
 const usernames = computed(() => {
   const usernames = new Set<string>();
   for (const rating of ratings.value) {
-    usernames.add(rating.username);
+    usernames.add(rating.username!);
   }
   return Array.from(usernames);
 });

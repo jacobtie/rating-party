@@ -4,7 +4,7 @@ export type Rating = {
   ratingId?: string
   gameId: string
   participantId?: string
-  username: string
+  username?: string
   wineId: string
   sightRating: number
   aromaRating: number
