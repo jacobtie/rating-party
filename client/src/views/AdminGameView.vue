@@ -117,7 +117,7 @@ const wines = ref<Wine[]>([]);
 
 const newWineName = ref('');
 const newWineCode = ref('');
-const newWineYear = ref('2023');
+const newWineYear = ref(2023);
 
 const addWine = async () => {
   if (!newWineName.value || !newWineCode.value || !newWineYear.value || !Number.isInteger(newWineYear.value) || +newWineYear.value <= 0) return;
@@ -126,7 +126,7 @@ const addWine = async () => {
     wines.value.push(wine);
     newWineName.value = '';
     newWineCode.value = '';
-    newWineYear.value = '2023';
+    newWineYear.value = 2023;
   } catch (err) {
     console.error(err);
   }
