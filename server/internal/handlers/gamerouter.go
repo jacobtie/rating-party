@@ -51,7 +51,7 @@ func (g *gameRouter) getSingleGame(w http.ResponseWriter, r *http.Request) error
 		return fmt.Errorf("[handlers.getSingleGame] game ID was not found: %w", werrors.ErrBadRequest)
 	}
 	if _, err := uuid.Parse(gameID); err != nil {
-		return fmt.Errorf("[handlers.getSingleGame] game ID was not a UUID: %w", werrors.ErrNotFound)
+		return fmt.Errorf("[handlers.getSingleGame] game ID was not a UUID: %w", werrors.ErrBadRequest)
 	}
 	game, err := g.controller.GetSingle(ctx, gameID)
 	if err != nil {
@@ -98,7 +98,7 @@ func (g *gameRouter) updateGame(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("[handlers.updateGame] game ID was not found: %w", werrors.ErrBadRequest)
 	}
 	if _, err := uuid.Parse(gameID); err != nil {
-		return fmt.Errorf("[handlers.updateGame] game ID was not a UUID: %w", werrors.ErrNotFound)
+		return fmt.Errorf("[handlers.updateGame] game ID was not a UUID: %w", werrors.ErrBadRequest)
 	}
 	var req updateGameRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -125,7 +125,7 @@ func (g *gameRouter) deleteGame(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("[handlers.deleteGame] game ID was not found: %w", werrors.ErrBadRequest)
 	}
 	if _, err := uuid.Parse(gameID); err != nil {
-		return fmt.Errorf("[handlers.deleteGame] game ID was not a UUID: %w", werrors.ErrNotFound)
+		return fmt.Errorf("[handlers.deleteGame] game ID was not a UUID: %w", werrors.ErrBadRequest)
 	}
 	game, err := g.controller.Delete(ctx, gameID)
 	if err != nil {

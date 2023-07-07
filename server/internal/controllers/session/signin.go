@@ -1,6 +1,7 @@
 package session
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -13,11 +14,11 @@ type SignInResponse struct {
 	GameID  *string `json:"gameId,omitempty"`
 }
 
-func (s *Controller) SignIn(username, passcode string) (*SignInResponse, error) {
+func (s *Controller) SignIn(ctx context.Context, username, passcode string) (*SignInResponse, error) {
 	if username == "admin" && passcode == s.cfg.AdminPasscode {
 		return s.signAdminToken()
 	}
-	return s.signInToGame(username, passcode)
+	return s.signInToGame(ctx, username, passcode)
 }
 
 func (s *Controller) signAdminToken() (*SignInResponse, error) {

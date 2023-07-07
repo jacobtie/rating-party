@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -28,8 +29,8 @@ func New(un, pw, host, dbName string) (*DB, error) {
 	return &DB{mysql}, nil
 }
 
-func (db *DB) WithTransaction(fn func(*sqlx.Tx) error) error {
-	tx, err := db.Beginx()
+func (db *DB) WithTransaction(ctx context.Context, fn func(*sqlx.Tx) error) error {
+	tx, err := db.BeginTxx(ctx, &sql.TxOptions{})
 	if err != nil {
 		return fmt.Errorf("[db.WithTransaction] failed to begin transaction: %w", err)
 	}

@@ -2,7 +2,7 @@
 import { useSession } from '@/composables/session';
 import router from '@/router';
 import { deleteGame, getGame, updateGame, type Game } from '@/services/game-service';
-import { getAllRatings, type Rating } from '@/services/rating-service';
+import { getAllRatings, getResults, type Rating } from '@/services/rating-service';
 import { createWine, deleteWine, getAllWines, type Wine } from '@/services/wine-service';
 import { computed, ref } from 'vue';
 
@@ -25,50 +25,7 @@ const usernames = computed(() => {
   }
   return Array.from(usernames);
 });
-const results = computed(() => {
-  const wineAggMap: Record<string, Record<string, number>> = {};
-  for (const rating of ratings.value) {
-    // Skip empty ratings
-    if (
-      rating.sightRating === 0 &&
-      rating.aromaRating === 0 &&
-      rating.tasteRating === 0 &&
-      rating.overallRating === 0 &&
-      rating.comments === ''
-    ) continue;
-    if (!wineAggMap[rating.wineId]) wineAggMap[rating.wineId] = {};
-    wineAggMap[rating.wineId][rating.username] = rating.sightRating + rating.aromaRating + rating.tasteRating + rating.overallRating;
-  }
-  const rows: Record<string, unknown>[] = [];
-  for (const [wineId, wineScores] of Object.entries(wineAggMap)) {
-    const wine = wines.value.find((wine) => wine.wineId === wineId);
-    if (!wine) continue;
-    const row: Record<string, unknown> = {
-      wineId: wine.wineId,
-      wineName: wine.wineName,
-      wineCode: wine.wineCode,
-      wineYear: wine.wineYear,
-    };
-    let sum = 0;
-    let count = 0;
-    for (const username of usernames.value) {
-      row[username] = wineScores[username] || 0;
-      if (!wineScores[username]) continue;
-      sum += wineScores[username];
-      count += 1;
-    }
-    row.avg = count === 0 ? 0 : Math.round((sum / count) * 100) / 100;
-    rows.push(row);
-  }
-  rows.sort((a, b) => {
-    if (a.avg === b.avg) return 0;
-    return (a.avg as number) > (b.avg as number) ? -1 : 1;
-  });
-  for (let i = 0; i < rows.length; i++) {
-    rows[i].rank = i + 1;
-  }
-  return rows;
-});
+const results = ref<Record<string, unknown>[]>([]);
 (async () => {
   try {
     const gameFromServer = await getGame(user.jwt, gameId);
@@ -78,15 +35,21 @@ const results = computed(() => {
       return;
     }
     game.value = gameFromServer;
-    if (!game.value!.isRunning) {
-      const ratingsFromServer = await getAllRatings(user.jwt, gameId);
-      if (ratingsFromServer === false) {
-        deleteUser();
-        router.push('/');
-        return;
-      }
-      ratings.value = ratingsFromServer;
+    if (game.value!.isRunning) return;
+    const ratingsFromServer = await getAllRatings(user.jwt, gameId);
+    if (ratingsFromServer === false) {
+      deleteUser();
+      router.push('/');
+      return;
     }
+    ratings.value = ratingsFromServer;
+    const resultsFromServer = await getResults(user.jwt, gameId);
+    if (resultsFromServer === false) {
+      deleteUser();
+      router.push('/');
+      return;
+    }
+    results.value = resultsFromServer;
   } catch (err) {
     console.error(err);
   }
@@ -104,6 +67,13 @@ const switchGameStatus = async () => {
         return;
       }
       ratings.value = ratingsFromServer;
+      const resultsFromServer = await getResults(user.jwt, gameId);
+      if (resultsFromServer === false) {
+        deleteUser();
+        router.push('/');
+        return;
+      }
+      results.value = resultsFromServer;
     }
   } catch (err) {
     console.error(err);
@@ -206,7 +176,7 @@ const logout = () => {
         </tbody>
       </v-table>
     </div>
-    <div v-if="!game.isRunning" class="block">
+    <div v-if="!game.isRunning && results && results.length > 1" class="block">
       <h2>Results</h2>
       <v-table>
         <thead>

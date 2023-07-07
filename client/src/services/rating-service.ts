@@ -37,3 +37,17 @@ export async function putRating(jwt: string, rating: Rating): Promise<void> {
     body: JSON.stringify(rating),
   });
 }
+
+export async function getResults(jwt: string, gameId: string): Promise<Record<string, unknown>[] | false> {
+  const response = await fetch(`${baseUrl}/games/${gameId}/ratings/results`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${jwt}`,
+    },
+  });
+  if (!response.ok) {
+    return false;
+  }
+  const results: Record<string, unknown>[] = await response.json();
+  return results;
+}

@@ -7,7 +7,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jacobtie/rating-party/server/internal/config"
+	"github.com/jacobtie/rating-party/server/internal/controllers/participant"
 	"github.com/jacobtie/rating-party/server/internal/controllers/rating"
+	"github.com/jacobtie/rating-party/server/internal/controllers/wine"
 	"github.com/jacobtie/rating-party/server/internal/middleware"
 	"github.com/jacobtie/rating-party/server/internal/platform/contextvalue"
 	"github.com/jacobtie/rating-party/server/internal/platform/db"
@@ -22,9 +24,15 @@ type ratingRouter struct {
 
 func registerRatingRoutes(service *web.Service, cfg *config.Config, db *db.DB) {
 	router := &ratingRouter{
-		controller: rating.NewController(cfg, db),
+		controller: rating.NewController(
+			cfg,
+			db,
+			participant.NewController(cfg, db),
+			wine.NewController(cfg, db),
+		),
 	}
 	service.Handle(http.MethodGet, "/api/v1/games/:gameId/ratings", router.getRatings, middleware.MakeAuthorizationMW(false), middleware.AuthenticateMW)
+	service.Handle(http.MethodGet, "/api/v1/games/:gameId/ratings/results", router.getRatingsResult, middleware.MakeAuthorizationMW(false), middleware.AuthenticateMW)
 	service.Handle(http.MethodPut, "/api/v1/games/:gameId/wines/:wineId/ratings", router.putRating, middleware.MakeAuthorizationMW(false), middleware.AuthenticateMW)
 }
 
@@ -39,7 +47,7 @@ func (rr *ratingRouter) getRatings(w http.ResponseWriter, r *http.Request) error
 		return fmt.Errorf("[handlers.getRating] game ID was not found: %w", werrors.ErrBadRequest)
 	}
 	if _, err := uuid.Parse(gameID); err != nil {
-		return fmt.Errorf("[handlers.getRating] game ID was not a UUID: %w", werrors.ErrNotFound)
+		return fmt.Errorf("[handlers.getRating] game ID was not a UUID: %w", werrors.ErrBadRequest)
 	}
 	v, ok := ctx.Value(contextvalue.KeyValues).(*contextvalue.Values)
 	if !ok {
@@ -64,6 +72,31 @@ func (rr *ratingRouter) getRatings(w http.ResponseWriter, r *http.Request) error
 	return nil
 }
 
+func (rr *ratingRouter) getRatingsResult(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	params := httprouter.ParamsFromContext(ctx)
+	if params == nil {
+		return fmt.Errorf("[handlers.getRatingsResult] no params in context: %w", werrors.ErrBadRequest)
+	}
+	gameID := params.ByName("gameId")
+	if gameID == "" {
+		return fmt.Errorf("[handlers.getRatingsResult] game ID was not found: %w", werrors.ErrBadRequest)
+	}
+	if _, err := uuid.Parse(gameID); err != nil {
+		return fmt.Errorf("[handlers.getRatingsResult] game ID was not a UUID: %w", werrors.ErrBadRequest)
+	}
+	v, ok := ctx.Value(contextvalue.KeyValues).(*contextvalue.Values)
+	if !ok {
+		return fmt.Errorf("[handlers.getRatingsResult] no values in context")
+	}
+	results, err := rr.controller.GetRatingsResult(ctx, gameID, v.IsAdmin)
+	if err != nil {
+		return fmt.Errorf("[handlers.getRatingsResult]: could not get ratings result: %w", err)
+	}
+	web.Respond(ctx, w, results, http.StatusOK)
+	return nil
+}
+
 type putRatingRequest struct {
 	SightRating   float64 `json:"sightRating"`
 	AromaRating   float64 `json:"aromaRating"`
@@ -83,14 +116,14 @@ func (rr *ratingRouter) putRating(w http.ResponseWriter, r *http.Request) error 
 		return fmt.Errorf("[handlers.putRating] game ID was not found: %w", werrors.ErrBadRequest)
 	}
 	if _, err := uuid.Parse(gameID); err != nil {
-		return fmt.Errorf("[handlers.putRating] game ID was not a UUID: %w", werrors.ErrNotFound)
+		return fmt.Errorf("[handlers.putRating] game ID was not a UUID: %w", werrors.ErrBadRequest)
 	}
 	wineID := params.ByName("wineId")
 	if wineID == "" {
 		return fmt.Errorf("[handlers.putRating] wine ID was not found: %w", werrors.ErrBadRequest)
 	}
 	if _, err := uuid.Parse(wineID); err != nil {
-		return fmt.Errorf("[handlers.putRating] wine ID was not a UUID: %w", werrors.ErrNotFound)
+		return fmt.Errorf("[handlers.putRating] wine ID was not a UUID: %w", werrors.ErrBadRequest)
 	}
 	v, ok := ctx.Value(contextvalue.KeyValues).(*contextvalue.Values)
 	if !ok {

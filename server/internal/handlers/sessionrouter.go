@@ -29,6 +29,7 @@ type signInRequest struct {
 }
 
 func (s *sessionRouter) signIn(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
 	var request signInRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return fmt.Errorf("[handlers.signIn] failed to decode body with error: %v: %w", err, werrors.ErrBadRequest)
@@ -36,7 +37,7 @@ func (s *sessionRouter) signIn(w http.ResponseWriter, r *http.Request) error {
 	if request.Username == "" {
 		return fmt.Errorf("[handlers.signIn] username is required: %w", werrors.ErrBadRequest)
 	}
-	res, err := s.controller.SignIn(request.Username, request.Passcode)
+	res, err := s.controller.SignIn(ctx, request.Username, request.Passcode)
 	if err != nil {
 		return fmt.Errorf("[handlers.signIn] failed to sign in: %w", err)
 	}
