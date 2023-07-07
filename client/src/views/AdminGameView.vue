@@ -80,6 +80,15 @@ const switchGameStatus = async () => {
   }
 };
 
+const switchGameResultsShared = async () => {
+  try {
+    await updateGame(user.jwt, gameId, game.value!.gameName, false, !game.value!.areResultsShared);
+    game.value!.areResultsShared = !game.value!.areResultsShared;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 const removeGame = async () => {
   if (!window.confirm('Are you sure you want to delete this party?')) return;
   try {
@@ -178,7 +187,7 @@ const logout = () => {
     </div>
     <div v-if="!game.isRunning && results && results.length > 1" class="block">
       <h2>Results</h2>
-      <v-table>
+      <v-table class="results-table">
         <thead>
           <tr>
             <th>Wine Name</th>
@@ -200,6 +209,7 @@ const logout = () => {
           </tr>
         </tbody>
       </v-table>
+      <v-btn :color="game.areResultsShared ? 'red' : 'green'" @click="switchGameResultsShared">{{ game.areResultsShared ? 'Hide Results' : 'Share Results' }}</v-btn>
     </div>
     <div class="block">
       <v-btn variant="tonal" @click="goBack">Back</v-btn>
@@ -226,5 +236,9 @@ const logout = () => {
 
 .block:first-of-type {
   margin-top: 16px;
+}
+
+.results-table {
+  margin-bottom: 12px;
 }
 </style>

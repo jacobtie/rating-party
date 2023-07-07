@@ -24,7 +24,7 @@ func NewController(cfg *config.Config, db *db.DB) *Controller {
 
 func (c *Controller) GenerateGameCode() string {
 	rand := rand.New(rand.NewSource(time.Now().UnixNano()))
-	nums := [5]int{rand.Intn(36), rand.Intn(36), rand.Intn(36), rand.Intn(36)}
+	nums := [5]int{rand.Intn(36), rand.Intn(36), rand.Intn(36), rand.Intn(36), rand.Intn(36)}
 	code := [5]string{}
 	for i, num := range nums {
 		if num < 10 {

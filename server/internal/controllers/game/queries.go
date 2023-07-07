@@ -16,7 +16,8 @@ func (c *Controller) GetAll(ctx context.Context) ([]*Game, error) {
 			BIN_TO_UUID(game_id),
 			game_name,
 			game_code,
-			is_running
+			is_running,
+			are_results_shared
 		FROM
 			game
 		;
@@ -36,6 +37,7 @@ func (c *Controller) GetAll(ctx context.Context) ([]*Game, error) {
 			&game.GameName,
 			&game.GameCode,
 			&game.IsRunning,
+			&game.AreResultsShared,
 		); err != nil {
 			return nil, fmt.Errorf("[game.GetAll] failed to scan row: %w", err)
 		}
@@ -50,7 +52,8 @@ func (c *Controller) GetSingle(ctx context.Context, gameID string) (*Game, error
 			BIN_TO_UUID(game_id),
 			game_name,
 			game_code,
-			is_running
+			is_running,
+			are_results_shared
 		FROM
 			game
 		WHERE game_id = UUID_TO_BIN(?)
@@ -62,6 +65,7 @@ func (c *Controller) GetSingle(ctx context.Context, gameID string) (*Game, error
 		&game.GameName,
 		&game.GameCode,
 		&game.IsRunning,
+		&game.AreResultsShared,
 	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("[game.GetSingle] no game found: %w", werrors.ErrNotFound)
@@ -86,13 +90,13 @@ func (c *Controller) Create(ctx context.Context, gameName string) (*Game, error)
 	return game, nil
 }
 
-func (c *Controller) Update(ctx context.Context, gameID, gameName string, isRunning bool) error {
+func (c *Controller) Update(ctx context.Context, gameID, gameName string, isRunning, areResultsShared bool) error {
 	if _, err := c.GetSingle(ctx, gameID); err != nil {
 		return fmt.Errorf("[game.Update] failed to get game: %w", err)
 	}
 	if _, err := c.db.DB.ExecContext(ctx, `
-		UPDATE game SET game_name = ?, is_running = ? WHERE game_id = UUID_TO_BIN(?);
-	`, gameName, isRunning, gameID); err != nil {
+		UPDATE game SET game_name = ?, is_running = ?, are_results_shared = ? WHERE game_id = UUID_TO_BIN(?);
+	`, gameName, isRunning, areResultsShared, gameID); err != nil {
 		return fmt.Errorf("[game.Update] failed to update game: %w", err)
 	}
 	return nil

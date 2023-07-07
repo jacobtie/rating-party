@@ -83,8 +83,9 @@ func (g *gameRouter) createGame(w http.ResponseWriter, r *http.Request) error {
 }
 
 type updateGameRequest struct {
-	GameName  string `json:"gameName"`
-	IsRunning bool   `json:"isRunning"`
+	GameName         string `json:"gameName"`
+	IsRunning        bool   `json:"isRunning"`
+	AreResultsShared bool   `json:"areResultsShared"`
 }
 
 func (g *gameRouter) updateGame(w http.ResponseWriter, r *http.Request) error {
@@ -107,7 +108,7 @@ func (g *gameRouter) updateGame(w http.ResponseWriter, r *http.Request) error {
 	if req.GameName == "" {
 		return fmt.Errorf("[handlers.updateGame] game name was empty: %w", werrors.ErrBadRequest)
 	}
-	if err := g.controller.Update(ctx, gameID, req.GameName, req.IsRunning); err != nil {
+	if err := g.controller.Update(ctx, gameID, req.GameName, req.IsRunning, req.AreResultsShared); err != nil {
 		return fmt.Errorf("[handlers.updateGame]: %w", err)
 	}
 	web.Respond(ctx, w, nil, http.StatusNoContent)

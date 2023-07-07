@@ -5,6 +5,7 @@ export type Game = {
   gameCode: string
   gameName: string
   isRunning: boolean
+  areResultsShared: boolean
 }
 
 export async function getAllGames(jwt: string): Promise<Game[] | false> {
@@ -48,7 +49,7 @@ export async function createGame(jwt: string, gameName: string): Promise<Game> {
   return game;
 }
 
-export async function updateGame(jwt: string, gameId: string, gameName: string, isRunning: boolean): Promise<void> {
+export async function updateGame(jwt: string, gameId: string, gameName: string, isRunning: boolean, areResultsShared = false): Promise<void> {
   await fetch(`${baseUrl}/games/${gameId}`, {
     method: 'PUT',
     headers: {
@@ -58,6 +59,7 @@ export async function updateGame(jwt: string, gameId: string, gameName: string, 
     body: JSON.stringify({
       gameName,
       isRunning,
+      areResultsShared,
     }),
   });
 }

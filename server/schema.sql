@@ -7,6 +7,7 @@ CREATE TABLE game (
     game_name VARCHAR(255) NOT NULL,
     game_code VARCHAR(255) NOT NULL,
     is_running BOOLEAN NOT NULL DEFAULT FALSE,
+    are_results_shared BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
     PRIMARY KEY (game_id)
@@ -19,7 +20,7 @@ CREATE TABLE participant (
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
     PRIMARY KEY (participant_id),
-    FOREIGN KEY (game_id) REFERENCES game(game_id),
+    FOREIGN KEY (game_id) REFERENCES game(game_id)
 );
 
 CREATE TABLE wine (
