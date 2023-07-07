@@ -12,7 +12,7 @@ import (
 
 func (c *Controller) GetAllWines(ctx context.Context, gameID string) ([]*Wine, error) {
 	rows, err := c.db.QueryxContext(ctx, `
-		SELECT wine_id, wine_name, wine_code, wine_year FROM wine WHERE game_id = ? ORDER BY wine_code ASC
+		SELECT wine_id, wine_name, wine_code, wine_year FROM wine WHERE game_id = $1 ORDER BY wine_code ASC
 	`, gameID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -39,7 +39,7 @@ func (c *Controller) GetAllWines(ctx context.Context, gameID string) ([]*Wine, e
 
 func (c *Controller) GetSingleWine(ctx context.Context, wineID string) (*Wine, error) {
 	row := c.db.QueryRowxContext(ctx, `
-		SELECT wine_id, wine_name, wine_code, wine_year FROM wine WHERE wine_id = ?
+		SELECT wine_id, wine_name, wine_code, wine_year FROM wine WHERE wine_id = $1
 	`, wineID)
 	var wine Wine
 	if err := row.Scan(
@@ -59,7 +59,7 @@ func (c *Controller) GetSingleWine(ctx context.Context, wineID string) (*Wine, e
 func (c *Controller) CreateWine(ctx context.Context, gameID, wineName, wineCode string, wineYear int) (*Wine, error) {
 	wineID := uuid.New().String()
 	if _, err := c.db.ExecContext(ctx, `
-		INSERT INTO wine (wine_id, game_id, wine_name, wine_code, wine_year) VALUES (?, ?, ?, ?, ?)
+		INSERT INTO wine (wine_id, game_id, wine_name, wine_code, wine_year) VALUES ($1, $2, $3, $4, $5)
 	`, wineID, gameID, wineName, wineCode, wineYear); err != nil {
 		return nil, fmt.Errorf("[wine.CreateWine] failed to insert wine: %w", err)
 	}
@@ -75,7 +75,7 @@ func (c *Controller) UpdateWine(ctx context.Context, wineID, wineName, wineCode 
 		return fmt.Errorf("[wine.UpdateWine] failed to get wine: %w", err)
 	}
 	if _, err := c.db.ExecContext(ctx, `
-		UPDATE wine SET wine_name = ?, wine_code = ?, wine_year = ? WHERE wine_id = ?
+		UPDATE wine SET wine_name = $1, wine_code = $2, wine_year = $3 WHERE wine_id = $4
 	`, wineName, wineCode, wineYear, wineID); err != nil {
 		return fmt.Errorf("[wine.UpdateWine] failed to update wine: %w", err)
 	}
@@ -88,7 +88,7 @@ func (c *Controller) DeleteWine(ctx context.Context, wineID string) (*Wine, erro
 		return nil, fmt.Errorf("[wine.DeleteWine] failed to get wine: %w", err)
 	}
 	if _, err := c.db.ExecContext(ctx, `
-		DELETE FROM wine WHERE wine_id = ?
+		DELETE FROM wine WHERE wine_id = $1
 	`, wineID); err != nil {
 		return nil, fmt.Errorf("[wine.DeleteWine] failed to delete wine: %w", err)
 	}

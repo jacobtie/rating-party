@@ -47,7 +47,7 @@ func (s *Controller) signInToGame(ctx context.Context, username, passcode string
 }
 
 func (s *Controller) getGameID(passcode string) (string, error) {
-	row := s.db.QueryRow("SELECT game_id FROM game WHERE game_code = ?", passcode)
+	row := s.db.QueryRow("SELECT game_id FROM game WHERE game_code = $1", passcode)
 	var gameID string
 	if err := row.Scan(&gameID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -75,7 +75,7 @@ func (s *Controller) signUserToken(userID, gameID string) (string, error) {
 }
 
 func (s *Controller) getUserIDByUsernameTx(ctx context.Context, tx *sqlx.Tx, username string) (string, error) {
-	row := tx.QueryRowxContext(ctx, "SELECT participant_id FROM participant WHERE username = ?", username)
+	row := tx.QueryRowxContext(ctx, "SELECT participant_id FROM participant WHERE username = $1", username)
 	var userID string
 	if err := row.Scan(&userID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -89,7 +89,7 @@ func (s *Controller) getUserIDByUsernameTx(ctx context.Context, tx *sqlx.Tx, use
 func (*Controller) createUserTx(ctx context.Context, tx *sqlx.Tx, username, gameID string) (string, error) {
 	participantID := uuid.New().String()
 	if _, err := tx.ExecContext(ctx, `
-		INSERT INTO participant (participant_id, username, game_id) VALUES (?, ?, ?)
+		INSERT INTO participant (participant_id, username, game_id) VALUES ($1, $2, $3)
 	`, participantID, username, gameID); err != nil {
 		return "", fmt.Errorf("[session.createUser] failed to create participant: %w", err)
 	}

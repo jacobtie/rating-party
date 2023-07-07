@@ -28,7 +28,7 @@ func (c *Controller) GetAllByGameID(ctx context.Context, gameID string) ([]*Rati
 			rating r
 			INNER JOIN participant p ON r.participant_id = p.participant_id
 		WHERE
-			r.game_id = ?
+			r.game_id = $1
 		;
 	`, gameID)
 	if err != nil {
@@ -77,8 +77,8 @@ func (c *Controller) GetAllByGameIDAndParticipantID(ctx context.Context, gameID,
 		FROM
 			rating
 		WHERE
-			game_id = ?
-			AND participant_id = ?
+			game_id = $1
+			AND participant_id = $2
 		;
 	`, gameID, participantID)
 	if err != nil {
@@ -139,15 +139,15 @@ func (c *Controller) CreateRating(ctx context.Context, rating *Rating) (*Rating,
 			overall_rating,
 			comments
 		) VALUES (
-			?,
-			?,
-			?,
-			?,
-			?,
-			?,
-			?,
-			?,
-			?
+			$1,
+			$2,
+			$3,
+			$4,
+			$5,
+			$6,
+			$7,
+			$8,
+			$9
 		)
 		;
 	`, ratingID, rating.GameID, rating.ParticipantID, rating.WineID, rating.SightRating, rating.AromaRating, rating.TasteRating, rating.OverallRating, rating.Comments); err != nil {
@@ -165,13 +165,13 @@ func (c *Controller) UpdateRating(ctx context.Context, ratingID string, rating *
 		UPDATE
 			rating
 		SET
-			sight_rating = ?,
-			aroma_rating = ?,
-			taste_rating = ?,
-			overall_rating = ?,
-			comments = ?
+			sight_rating = $1,
+			aroma_rating = $2,
+			taste_rating = $3,
+			overall_rating = $4,
+			comments = $5
 		WHERE
-			rating_id = ?
+			rating_id = $6
 		;
 	`, rating.SightRating, rating.AromaRating, rating.TasteRating, rating.OverallRating, rating.Comments, ratingID); err != nil {
 		return nil, fmt.Errorf("[rating.UpdateRating] failed to update rating: %w", err)
@@ -198,8 +198,8 @@ func (c *Controller) GetRatingByParticipantIDAndWineID(ctx context.Context, part
 		FROM
 			rating
 		WHERE
-			participant_id = ?
-			AND wine_id = ?
+			participant_id = $1
+			AND wine_id = $2
 		;
 	`, participantID, wineID)
 	var rating Rating
